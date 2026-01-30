@@ -83,14 +83,15 @@ def scrape_website():
     driver = webdriver.Firefox(service=service, options=options)
 
     # Navegar al sitio web
-    url = "https://jorgebenitezlopez.com"
+    url = "http://books.toscrape.com/"
     driver.get(url)
-    print(driver.title)  
+    # print(driver.title)  
+    print(f"Navegando a: {url}")
     
 # Esperar a que los elementos estén presentes
     try:
         WebDriverWait(driver, 10).until(
-            EC.presence_of_all_elements_located((By.CSS_SELECTOR, "h1"))
+            EC.presence_of_all_elements_located((By.CSS_SELECTOR, "article.product_pod"))
         )
         # 2. ### NUEVO: HACER LA FOTO ###
         # Creamos un nombre con la fecha y hora para que no se repita
