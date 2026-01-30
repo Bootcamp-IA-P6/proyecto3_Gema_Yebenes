@@ -83,39 +83,65 @@ def scrape_website():
     driver = webdriver.Firefox(service=service, options=options)
 
     # Navegar al sitio web
-    url = "http://books.toscrape.com/"
+    url = "https://quotes.toscrape.com/"
     driver.get(url)
     # print(driver.title)  
     print(f"Navegando a: {url}")
     
+    scraped_data = []
+    
 # Esperar a que los elementos estén presentes
     try:
         WebDriverWait(driver, 10).until(
-            EC.presence_of_all_elements_located((By.CSS_SELECTOR, "article.product_pod"))
+            EC.presence_of_all_elements_located((By.CSS_SELECTOR, "div.quote"))
         )
         # 2. ### NUEVO: HACER LA FOTO ###
         # Creamos un nombre con la fecha y hora para que no se repita
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         screenshot_path = os.path.join(screenshots_dir, f"captura_{timestamp}.png")
-        
         # ¡Click! Guardamos la foto
         driver.save_screenshot(screenshot_path)
         print(f"Captura de pantalla guardada en: {screenshot_path}")
         
-        titles = driver.find_elements(By.CSS_SELECTOR, "h1")
-        urls = driver.find_elements(By.CSS_SELECTOR, "a")
+        
+        # titles = driver.find_elements(By.CSS_SELECTOR, "h1")
+        # urls = driver.find_elements(By.CSS_SELECTOR, "a")
+        quote_cards = driver.find_elements(By.CSS_SELECTOR, "div.quote")
+        
+        for card in quote_cards:
+            # DENTRO de cada caja, buscamos sus detalles
+            # Usamos 'card.find_element' (singular) para buscar DENTRO de esa tarjeta específica
+            
+            # 1. El texto de la cita (span con clase "text")
+            text = card.find_element(By.CSS_SELECTOR, "span.text").text
+            
+            # 2. El autor (small con clase "author")
+            author = card.find_element(By.CSS_SELECTOR, "small.author").text
+            
+            # 3. Las etiquetas (tags). Puede haber varias, así que usamos find_elements (plural)
+            # y hacemos una lista de textos
+            tags_elements = card.find_elements(By.CSS_SELECTOR, "a.tag")
+            tags_list = [tag.text for tag in tags_elements]
+            
+            # Guardamos los datos
+            scraped_data.append({
+                "quote": text,
+                "author": author,
+                "tags": tags_list
+            })
     except Exception as e:
         print("Error al encontrar los elementos:", e)
         driver.quit()
         return []
+    print(f"¡Éxito! Se han encontrado {len(scraped_data)} citas.")
+    print(scraped_data) # Descomenta para ver los datos en el log
 
-    scraped_data = []
-    for title, link in zip(titles, urls):
-        scraped_data.append({
-            "title": title.text,
-            "url": link.get_attribute("href"),
-        })
-
-    print("Scraped data:", scraped_data)  # Para depuración
+    # scraped_data = []
+    # for title, link in zip(titles, urls):
+    #     scraped_data.append({
+    #         "title": title.text,
+    #         "url": link.get_attribute("href"),
+    #     })
+    # print("Scraped data:", scraped_data)  # Para depuración
     driver.quit()
     return scraped_data

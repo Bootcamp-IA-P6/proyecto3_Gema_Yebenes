@@ -11,7 +11,19 @@ class Command(BaseCommand):
         data = scrape_website()
         print("Scraped Data:", data)  # Agrega esta línea para depurar
         # Guarda
+        # for item in data:
+        #     ScrapedData.objects.create(text=item["text"], author=item["author"])
+        # # Confirma
+        # self.stdout.write(self.style.SUCCESS("Scraping completed!"))
+        
+        # 2. Guardamos en la base de datos nueva
         for item in data:
-            ScrapedData.objects.create(title=item["title"], url=item["url"])
-        # Confirma
-        self.stdout.write(self.style.SUCCESS("Scraping completed!"))
+            # Truco: Convertimos la lista de tags ['amor', 'vida'] a texto "amor, vida"
+            tags_as_text = ", ".join(item["tags"])
+            
+            ScrapedData.objects.create(
+                quote=item["quote"],     # Usamos la clave 'quote' del diccionario
+                author=item["author"],   # Usamos la clave 'author'
+                tags=tags_as_text        # Guardamos los tags
+            )
+        self.stdout.write(self.style.SUCCESS(f"¡Guardadas {len(data)} citas nuevas!"))
